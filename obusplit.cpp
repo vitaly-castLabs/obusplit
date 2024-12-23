@@ -39,6 +39,8 @@ void saveFrame(std::vector<std::uint8_t>& frameBuf, int& frameIdx, size_t& total
     frameFile.write(reinterpret_cast<const char*>(frameBuf.data()), frameBuf.size());
     totalExtractedFrameSize += frameBuf.size();
 
+    std::cout << "[" << frameIdx << "] saving frame, " << frameBuf.size() << " bytes (total: " << totalExtractedFrameSize << " bytes)\n";
+
     frameBuf.clear();
     frameIdx++;
 }
@@ -81,6 +83,8 @@ int main(int argc, char* argv[]) {
     int frameIdx = 0;
     size_t totalExtractedFrameSize = 0;
 
+    std::cout << std::setw(8) << "offset" << " " << std::setw(6) << "size" << "   OBU info\n";
+
     size_t off = 0;
     while (off < obuFileSize) {
         const auto obuStartOff = off;
@@ -104,7 +108,6 @@ int main(int argc, char* argv[]) {
             if (!(obuSizeByte & 0x80))
                 break;
         }
-        std::cout << "obu_type: " << obuTypeToString[obuType] << "(" << obuType << "), obu_size: " << obuSize << "\n";
 
         if (off + obuSize > obuFileSize) {
             std::cerr << "Invalid obu_size / truncated OBU\n";
@@ -113,6 +116,8 @@ int main(int argc, char* argv[]) {
 
         if (obuType == static_cast<int>(ObuType::TempDelimiter))
             saveFrame(frameBuf, frameIdx, totalExtractedFrameSize);
+
+       std::cout << std::setw(8) << obuStartOff << " " << std::setw(6) << (off + obuSize - obuStartOff) << "   obu_type: " << obuTypeToString[obuType] << "(" << obuType << "), obu_size: " << obuSize << "\n";
 
         frameBuf.insert(frameBuf.end(), obuBuf.begin() + obuStartOff, obuBuf.begin() + off + obuSize);
         off += obuSize;
