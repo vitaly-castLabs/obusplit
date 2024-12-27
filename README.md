@@ -1,7 +1,7 @@
 # AV1 frame splitter
 Takes a raw AV1 stream (`5.2 Low overhead bitstream format`) and splits it into separate frames, `OBU_TEMPORAL_DELIMITER` to `OBU_TEMPORAL_DELIMITER`:
 ```sh
-clang++ -std=c++17 -fcolor-diagnostics -fansi-escape-codes -O3 obusplit.cpp -o obusplit
+clang++ -std=c++17 -fcolor-diagnostics -fansi-escape-codes -O3 obusplit.cpp -o obusplit && \
 ./obusplit av1-sample.obu
 ```
 
