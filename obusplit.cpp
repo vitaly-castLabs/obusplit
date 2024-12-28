@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <memory>
 
-// underlying type is set to avoid UB on static_cast under C++17 (it's extracted from a single byte)
-enum class ObuType: uint8_t { SeqHdr = 1, TempDelimiter = 2, FrameHdr = 3, TileGroup = 4, Metadata = 5, Frame = 6, RedFrameHdr = 7, TileList = 8, Padding = 15 };
+enum class ObuType: std::uint8_t { SeqHdr = 1, TempDelimiter = 2, FrameHdr = 3, TileGroup = 4, Metadata = 5, Frame = 6, RedFrameHdr = 7, TileList = 8, Padding = 15 };
 
 static const char* obuTypeToString[16] = {
     "OBU_RESERVED_0",
@@ -90,7 +89,7 @@ int main(int argc, char* argv[]) {
         const auto obuStartOff = off;
 
         const auto obuHdr = obuBuf[off++];
-        const auto obuType = ((obuHdr & 0x78) >> 3);
+        const auto obuType = (obuHdr & 0x78) >> 3;
         const auto obuExt = (obuHdr & 0x04) >> 2;
         const auto obuHasSize = (obuHdr & 0x02) >> 1;
         if (!obuHasSize) {
@@ -104,7 +103,7 @@ int main(int argc, char* argv[]) {
         std::uint64_t obuSize = 0;
         for (size_t i = 0; i < 8; ++i) {
             const auto obuSizeByte = obuBuf[off++];
-            obuSize |= (obuSizeByte & 0x7F) << (7 * i);
+            obuSize |= (obuSizeByte & 0x7f) << (7 * i);
             if (!(obuSizeByte & 0x80))
                 break;
         }
@@ -114,10 +113,10 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        if (obuType == static_cast<int>(ObuType::TempDelimiter))
+        if (obuType == static_cast<std::uint8_t>(ObuType::TempDelimiter))
             saveFrame(frameBuf, frameIdx, totalExtractedFrameSize);
 
-       std::cout << std::setw(8) << obuStartOff << " " << std::setw(6) << (off + obuSize - obuStartOff) << "   obu_type: " << obuTypeToString[obuType] << "(" << obuType << "), obu_size: " << obuSize << "\n";
+        std::cout << std::setw(8) << obuStartOff << " " << std::setw(6) << (off + obuSize - obuStartOff) << "   obu_type: " << obuTypeToString[obuType] << "(" << obuType << "), obu_size: " << obuSize << "\n";
 
         frameBuf.insert(frameBuf.end(), obuBuf.begin() + obuStartOff, obuBuf.begin() + off + obuSize);
         off += obuSize;
